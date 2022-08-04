@@ -11,7 +11,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 
 public class VendorControllerTest {
@@ -20,7 +19,7 @@ public class VendorControllerTest {
     VendorController vendorController;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         vendorRepository = Mockito.mock(VendorRepository.class);
         vendorController = new VendorController(vendorRepository);
         webTestClient = WebTestClient.bindToController(vendorController).build();
@@ -72,5 +71,24 @@ public class VendorControllerTest {
                 .exchange()
                 .expectStatus()
                 .isCreated();
+    }
+
+    @Test
+    public void update() {
+        BDDMockito.given(vendorRepository.save(any(Vendor.class)))
+                .willReturn(Mono.just(Vendor.builder().build()));
+
+        Mono<Vendor> nameToUpdateMono =
+                Mono.just(Vendor.builder()
+                        .firstName("Vladimir")
+                        .lastName("Vladimirov")
+                        .build());
+
+        webTestClient.put()
+                .uri("/api/v1/vendors/Vladimir")
+                .body(nameToUpdateMono, Vendor.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
     }
 }
